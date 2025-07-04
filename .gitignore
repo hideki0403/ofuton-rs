@@ -1,2 +1,5 @@
 /target
 /migration/target
+
+config.toml
+ofuton.sqlite3
