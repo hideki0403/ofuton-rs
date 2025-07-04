@@ -1,0 +1,16 @@
+[server]
+host = "0.0.0.0"
+port = 3010
+
+[database]
+# ref: https://www.sea-ql.org/SeaORM/docs/install-and-config/connection/#connection-string
+connection = "sqlite://./ofuton.sqlite3"
+# connection = "postgres://user:password@localhost/ofuton" # PostgreSQL example
+
+[bucket]
+path = "./buckets"
+max_upload_size = 104857600 # 100 MB
+
+[account]
+access_key = "please change this field"
+secret_key = "please change this field"
