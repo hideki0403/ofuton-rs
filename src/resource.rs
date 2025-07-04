@@ -1,0 +1,1 @@
+pub const DEFAULT_CONFIG_TOML: &'static [u8] = include_bytes!("resource/default.config.toml");
