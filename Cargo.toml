@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["migration"]
+members = [".", "migration"]
 
 [dependencies]
 migration = { path = "migration" }
@@ -18,4 +18,4 @@ features = ["full"]
 
 [dependencies.sea-orm]
 version = "1.1"
-features = ["sqlx-postgres", "sqlx-sqlite", "runtime-tokio-native-tls", "macros"]
+features = ["sqlx-postgres", "sqlx-sqlite", "runtime-tokio-rustls", "macros"]
