@@ -1,6 +1,7 @@
+use std::{fs, path::Path};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
-use config::{Config, File};
+use config::{Config, File, FileFormat};
 use crate::resource;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -11,13 +12,29 @@ pub struct CFGServer {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CFGDatabase {
-    pub connection: String,
+    pub provider: String,
+    pub sqlite: CFGDatabaseSQLite,
+    pub postgres: CFGDatabasePostgres,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct CFGDatabaseSQLite {
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct CFGDatabasePostgres {
+    pub user: String,
+    pub password: String,
+    pub host: String,
+    pub port: u16,
+    pub database: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CFGBucket {
     pub path: String,
-    pub max_upload_size: u64,
+    pub max_upload_size_mb: u64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -34,19 +51,23 @@ pub struct AppConfig {
     pub account: CFGAccount,
 }
 
-// https://blog.logrocket.com/configuration-management-in-rust-web-services/
 impl AppConfig {
     pub fn new() -> Result<Self, config::ConfigError> {
-        Config::builder()
+        if !Path::new("./config.toml").exists() {
+            let default_config = resource::DEFAULT_CONFIG_TOML;
+            fs::write("./config.toml", default_config).expect("Failed to create default config file");
+        }
+
+        let config = Config::builder()
+            .add_source(File::from_str(str::from_utf8(resource::DEFAULT_CONFIG_TOML).unwrap(), FileFormat::Toml))
             .add_source(File::with_name("./config.toml"))
             .build()
-            .expect("Failed to load configuration")
+            .expect("Failed to load configuration");
+
+        config.try_deserialize::<AppConfig>()
     }
 }
 
-pub static CONFIG: Lazy<Config> = Lazy::new(|| {
-    Config::builder()
-        .add_source(File::with_name("./config.toml"))
-        .build()
-        .expect("Failed to load configuration")
+pub static CONFIG: Lazy<AppConfig> = Lazy::new(|| {
+    AppConfig::new().expect("Failed to initialize application configuration")
 });
