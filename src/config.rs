@@ -44,11 +44,17 @@ pub struct CFGAccount {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct CFGSentry {
+    pub dsn: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub server: CFGServer,
     pub database: CFGDatabase,
     pub bucket: CFGBucket,
     pub account: CFGAccount,
+    pub sentry: CFGSentry,
 }
 
 impl AppConfig {

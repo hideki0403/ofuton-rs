@@ -22,3 +22,6 @@ max_upload_size_mb = 10 # MB
 [account]
 access_key = "please change this field"
 secret_key = "please change this field"
+
+[sentry]
+dsn = "" # Sentry DSN, leave empty to disable
