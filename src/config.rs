@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{fs, path::Path, process};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use config::{Config, File, FileFormat};
@@ -62,6 +62,8 @@ impl AppConfig {
         if !Path::new("./config.toml").exists() {
             let default_config = resource::DEFAULT_CONFIG_TOML;
             fs::write("./config.toml", default_config).expect("Failed to create default config file");
+            println!("Created configration file at ./config.toml. Please check it before running the application.");
+            process::exit(0);
         }
 
         let config = Config::builder()
