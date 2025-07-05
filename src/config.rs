@@ -62,7 +62,7 @@ impl AppConfig {
         if !Path::new("./config.toml").exists() {
             let default_config = resource::DEFAULT_CONFIG_TOML;
             fs::write("./config.toml", default_config).expect("Failed to create default config file");
-            println!("Created configration file at ./config.toml. Please check it before running the application.");
+            tracing::info!("Created configration file at ./config.toml. Please check it before running the application.");
             process::exit(0);
         }
 

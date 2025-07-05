@@ -23,14 +23,14 @@ pub async fn initialize() -> Result<(), sea_orm::DbErr> {
 
     let connection = Database::connect(path).await;
     if let Err(err) = connection {
-        eprintln!("Failed to connect to the database: {}", err);
+        tracing::error!("Failed to connect to the database: {}", err);
         return Err(err);
     }
 
     let db = connection.unwrap();
     let migration = Migrator::up(&db, None).await;
     if let Err(err) = migration {
-        eprintln!("Failed to apply migrations: {}", err);
+        tracing::error!("Failed to apply migrations: {}", err);
         return Err(err);
     }
 
