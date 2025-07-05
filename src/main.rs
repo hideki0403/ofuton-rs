@@ -21,7 +21,7 @@ fn main() {
 
     // Sentry setup
     let conf = config::CONFIG.clone();
-    if let Ok(dsn) = sentry::IntoDsn::into_dsn(conf.sentry.dsn) {
+    if !conf.sentry.dsn.is_empty() && let Ok(dsn) = sentry::IntoDsn::into_dsn(conf.sentry.dsn) {
         tracing::info!("Sentry logging is enabled");
         let _guard = sentry::init(sentry::ClientOptions {
             dsn: dsn,
