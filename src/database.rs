@@ -1,6 +1,7 @@
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use once_cell::sync::OnceCell;
 use migration::{Migrator, MigratorTrait};
+use tracing::log::LevelFilter;
 use crate::config;
 
 static DB: OnceCell<DatabaseConnection> = OnceCell::new();
@@ -21,7 +22,10 @@ pub async fn initialize() -> Result<(), sea_orm::DbErr> {
         _ => panic!("Unsupported database provider"),
     };
 
-    let connection = Database::connect(path).await;
+    let mut options = ConnectOptions::new(path);
+    options.sqlx_logging_level(LevelFilter::Debug);
+
+    let connection = Database::connect(options).await;
     if let Err(err) = connection {
         tracing::error!("Failed to connect to the database: {}", err);
         return Err(err);
