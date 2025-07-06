@@ -3,6 +3,8 @@ use sentry;
 
 mod database;
 mod entity;
+mod server;
+mod storage;
 mod config;
 mod resource;
 
@@ -42,4 +44,5 @@ fn main() {
 
 async fn run() {
     database::initialize().await.expect("Failed to initialize the database");
+    server::listen().await;
 }
