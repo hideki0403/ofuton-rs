@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 use axum::{body::Body, extract::State, http::{Request, Uri}, middleware::Next, response::Response};
 use sha2::{Sha256, Digest};
 use hmac::{Hmac, Mac};
-use regex::Regex;
+use crate::server::utils::get_header;
 
 #[derive(Clone)]
 pub struct SignatureVerificationState {
@@ -44,7 +44,9 @@ fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) 
         return false;
     }
 
-    let signed_headers = components.get("SignedHeaders").unwrap_or(&"").split(';').collect::<Vec<&str>>();
+    let mut signed_headers = components.get("SignedHeaders").unwrap_or(&"").split(';').collect::<Vec<&str>>();
+    signed_headers.sort();
+
     let string_to_sign = get_string_to_sign(request, &credentials, &signed_headers);
 
     let mut mac = HmacSha256::new_from_slice(format!("AWS4{}", secret_key).as_bytes()).unwrap();
@@ -92,9 +94,9 @@ fn get_components(authorization: &str) -> HashMap<&str, &str> {
 fn get_query_string(uri: &Uri) -> String {
     let mut pairs = uri.query().unwrap_or("")
         .split('&')
-        .filter_map(|s| s.split_once('=').map(|(k, v)| (k.to_string(), v.to_string())))
-        .filter(|(k, _)| k != "X-Amz-Signature")
-        .map(|(k, v)| format!("{}={}", urlencoding::encode(k.as_str()), urlencoding::encode(v.as_str())))
+        .map(|s| s.split_once('=').unwrap_or((s, "")))
+        .filter(|(k, _)| *k != "X-Amz-Signature")
+        .map(|(k, v)| format!("{}={}", urlencoding::encode(k), urlencoding::encode(v)))
         .collect::<Vec<String>>();
 
     pairs.sort();
@@ -106,20 +108,18 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_h
         .iter()
         .map(|h| {
             let header_value = get_header(request, *h, None);
-            format!("{}:{}\n", h, header_value)
+            format!("{}:{}\n", h.to_lowercase(), header_value)
         })
-        .collect::<Vec<String>>()
-        .join("");
+        .collect::<String>();
 
     let content_hash = get_header(request, "X-Amz-Content-Sha256", Some("UNSIGNED-PAYLOAD".to_string()));
-    let uri_regex = Regex::new(r"\?.*").unwrap();
 
     let canonical_request_string = [
         request.method().as_str(),
-        uri_regex.replace(&request.uri().to_string(), "").as_ref(),
+        request.uri().path(),
         &get_query_string(&request.uri()),
         canonical_headers.as_str(),
-        signed_headers.join(";").as_str(),
+        signed_headers.iter().map(|h| h.to_lowercase()).collect::<Vec<String>>().join(";").as_str(),
         content_hash.as_str(),
     ].join("\n");
 
@@ -140,11 +140,4 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_h
         credentials_scope.as_str(),
         canonical_request_hash.as_str(),
     ].join("\n");
-}
-
-fn get_header(request: &Request<Body>, header_name: &str, fallback: Option<String>) -> String {
-    request.headers().get(header_name)
-        .and_then(|v| v.to_str().ok())
-        .map(|s| s.to_string())
-        .unwrap_or(fallback.unwrap_or_default())
 }
