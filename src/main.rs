@@ -44,5 +44,6 @@ fn main() {
 
 async fn run() {
     database::initialize().await.expect("Failed to initialize the database");
+    storage::initialize().await;
     server::listen().await;
 }
