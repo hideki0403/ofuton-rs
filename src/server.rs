@@ -1,5 +1,5 @@
 use std::{sync::Arc, time::Duration};
-use axum::{http::StatusCode, response::{IntoResponse, Response}, routing, Router};
+use axum::{extract::DefaultBodyLimit, http::StatusCode, response::{IntoResponse, Response}, routing, Router};
 use tokio::net::TcpListener;
 use tower_http::{request_id::{MakeRequestUuid, SetRequestIdLayer}, trace::TraceLayer};
 use tracing::Span;
@@ -8,6 +8,7 @@ use crate::config;
 
 mod middleware;
 mod api;
+mod utils;
 
 // Error handling
 pub struct AppError(anyhow::Error);
@@ -38,6 +39,7 @@ pub async fn listen() {
 
     let write_routes = Router::new()
         .route("/{*object}", routing::post(api::object::write::write_handler).put(api::object::write::write_handler).delete(api::object::write::write_handler))
+        .layer(DefaultBodyLimit::max((conf.bucket.max_upload_size_mb * 1024 * 1024).try_into().unwrap()))
         .layer(axum::middleware::from_fn_with_state(verify_signatures, middleware::signature::signature_verification));
 
     let app = Router::new()
