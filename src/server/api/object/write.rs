@@ -1,14 +1,8 @@
-use std::path;
-use axum::{extract::{Path, Query}, http::{HeaderMap, Method, StatusCode}, response::IntoResponse};
-use axum_range::{Ranged, KnownSize};
-use axum_extra::{headers::Range, TypedHeader};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+use axum::{body::Body, extract::{Path, Query, Request}, http::{Method, StatusCode}, response::IntoResponse};
 use serde::Deserialize;
-use tokio::fs::File;
-use crate::{config, server::AppError};
+use crate::storage;
 use crate::server::AppResult;
-use crate::database;
-use crate::entity;
+use crate::server::utils::{get_header, parse_content_disposition};
 
 #[derive(Deserialize, Debug)]
 pub struct ReqParams {
@@ -82,7 +76,20 @@ pub async fn write_handler(Path(object_path): Path<String>, Query(params): Query
 
     match operation {
         OperationType::PutObject => {
-            // TODO
+            let write_object_data = storage::WriteObjectData {
+                binary: body.into_data_stream(),
+                path: object_path,
+                mime_type,
+                content_size,
+                filename,
+            };
+
+            let result = storage::write_object(write_object_data).await;
+            if let Err(e) = result {
+                return Err(e.into());
+            }
+
+            return Ok(StatusCode::CREATED.into_response());
         }
         _ => {
             return Ok((StatusCode::BAD_REQUEST, "Unknown operation type").into_response());
