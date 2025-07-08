@@ -1,12 +1,13 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use anyhow::Error;
-use tokio::fs::File;
+use axum::body::BodyDataStream;
+use tokio::{fs::File, io::{AsyncWriteExt, BufWriter}};
+use tokio_stream::StreamExt;
 
 use crate::config;
 
 pub async fn read_object(internal_filename: String) -> Result<File, Error> {
-    let path = Path::new(&config::CONFIG.bucket.path).join(internal_filename);
-
+    let path = resolve_path(internal_filename);
     if !path.exists() {
         return Err(anyhow::anyhow!("File does not exist"));
     }
@@ -19,6 +20,21 @@ pub async fn read_object(internal_filename: String) -> Result<File, Error> {
     return Ok(file.unwrap());
 }
 
-pub async fn write_object() -> Result<(), Error> {
-    // TODO
+pub async fn write_object(internal_filename: String, mut stream: BodyDataStream) -> Result<(), Error> {
+    let path = resolve_path(internal_filename);
+    if path.exists() {
+        return Err(anyhow::anyhow!("File already exists at path: {}", path.display()));
+    }
+
+    let mut writer = BufWriter::new(File::create(&path).await?);
+    while let Some(chunk) = stream.next().await {
+        writer.write_all(&chunk?).await?;
+    }
+
+    writer.flush().await?;
+    return Ok(());
+}
+
+fn resolve_path(internal_filename: String) -> PathBuf {
+    return Path::new(&config::CONFIG.bucket.path).join(internal_filename);
 }
