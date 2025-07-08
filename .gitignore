@@ -1,5 +1,6 @@
 /target
 /migration/target
+/bucket
 
 config.toml
 ofuton.sqlite3
