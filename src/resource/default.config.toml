@@ -16,7 +16,7 @@ user = "user"
 password = "password"
 
 [bucket]
-path = "./buckets"
+path = "./bucket"
 max_upload_size_mb = 10 # MB
 
 [account]
