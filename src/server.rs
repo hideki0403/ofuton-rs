@@ -39,6 +39,7 @@ pub async fn listen() {
 
     let write_routes = Router::new()
         .route("/{*object}", routing::post(api::object::write::write_handler).put(api::object::write::write_handler).delete(api::object::write::write_handler))
+        .layer(axum::middleware::from_fn(middleware::multipart::multipart_state_manager))
         .layer(DefaultBodyLimit::max((conf.bucket.max_upload_size_mb * 1024 * 1024).try_into().unwrap()))
         .layer(axum::middleware::from_fn_with_state(verify_signatures, middleware::signature::signature_verification));
 

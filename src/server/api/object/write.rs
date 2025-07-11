@@ -1,20 +1,12 @@
-use axum::{body::Body, extract::{Path, Query, Request}, http::{Method, StatusCode}, response::IntoResponse};
-use serde::Deserialize;
+use axum::{body::Body, extract::{Path, Request}, http::{Method, Response, StatusCode}, response::IntoResponse};
+use serde::Serialize;
+use uuid::Uuid;
 use crate::storage;
 use crate::server::AppResult;
+use crate::server::middleware::multipart::MultipartUploadState;
 use crate::server::utils::{get_header, parse_content_disposition};
 
-#[derive(Deserialize, Debug)]
-pub struct ReqParams {
-    #[serde(alias = "x-id")]
-    x_id: Option<String>,
-    #[serde(alias = "uploadId")]
-    upload_id: Option<String>,
-    #[serde(alias = "partNumber")]
-    part_number: Option<u32>,
-}
-
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 enum OperationType {
     PutObject,
     CreateMultipartUpload,
@@ -25,44 +17,14 @@ enum OperationType {
     Unknown,
 }
 
-pub async fn write_handler(Path(object_path): Path<String>, Query(params): Query<ReqParams>, request: Request<Body>) -> AppResult<impl IntoResponse> {
+pub async fn write_handler(Path(object_path): Path<String>, request: Request<Body>) -> AppResult<impl IntoResponse> {
     if object_path.is_empty() {
         return Ok(StatusCode::BAD_REQUEST.into_response());
     }
 
-    let operation = match params.x_id.unwrap_or_default().as_str() {
-        "PutObject" => OperationType::PutObject,
-        "CreateMultipartUpload" => OperationType::CreateMultipartUpload,
-        "UploadPart" => OperationType::UploadPart,
-        "CompleteMultipartUpload" => OperationType::CompleteMultipartUpload,
-        "AbortMultipartUpload" => OperationType::AbortMultipartUpload,
-        "DeleteObject" => OperationType::DeleteObject,
-        _ => {
-            match *request.method() {
-                Method::PUT => {
-                    if params.upload_id.is_some() {
-                        OperationType::UploadPart
-                    } else {
-                        OperationType::PutObject
-                    }
-                }
-                Method::POST => {
-                    if params.upload_id.is_some() {
-                        OperationType::CompleteMultipartUpload
-                    } else {
-                        OperationType::CreateMultipartUpload
-                    }
-                }
-                Method::DELETE => {
-                    if params.upload_id.is_some() {
-                        OperationType::AbortMultipartUpload
-                    } else {
-                        OperationType::DeleteObject
-                    }
-                },
-                _ => OperationType::Unknown,
-            }
-        },
+    let (parts, body) = request.into_parts();
+    let multipart_upload_state = parts.extensions.get::<MultipartUploadState>().unwrap();
+    let is_multipart_operation = multipart_upload_state.upload_id.as_ref().is_some();
     };
 
     if operation == OperationType::Unknown {
