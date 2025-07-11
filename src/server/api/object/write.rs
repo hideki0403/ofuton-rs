@@ -25,6 +25,30 @@ pub async fn write_handler(Path(object_path): Path<String>, request: Request<Bod
     let (parts, body) = request.into_parts();
     let multipart_upload_state = parts.extensions.get::<MultipartUploadState>().unwrap();
     let is_multipart_operation = multipart_upload_state.upload_id.as_ref().is_some();
+
+    let operation = match parts.method {
+        Method::PUT => {
+            if is_multipart_operation {
+                OperationType::UploadPart
+            } else {
+                OperationType::PutObject
+            }
+        }
+        Method::POST => {
+            if is_multipart_operation {
+                OperationType::CompleteMultipartUpload
+            } else {
+                OperationType::CreateMultipartUpload
+            }
+        }
+        Method::DELETE => {
+            if is_multipart_operation {
+                OperationType::AbortMultipartUpload
+            } else {
+                OperationType::DeleteObject
+            }
+        },
+        _ => OperationType::Unknown,
     };
 
     if operation == OperationType::Unknown {
