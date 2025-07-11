@@ -18,6 +18,7 @@ password = "password"
 [bucket]
 path = "./bucket"
 max_upload_size_mb = 10 # MB
+request_expiration_seconds = 300 # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html#why-requests-are-signed:~:text=Protect%20against%20potential%20replay%20attacks
 
 [account]
 access_key = "please change this field"

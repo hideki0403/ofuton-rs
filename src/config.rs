@@ -35,6 +35,7 @@ pub struct CFGDatabasePostgres {
 pub struct CFGBucket {
     pub path: String,
     pub max_upload_size_mb: u64,
+    pub request_expiration_seconds: i64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
