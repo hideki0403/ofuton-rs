@@ -26,7 +26,7 @@ pub async fn signature_verification(State(signatures): State<SignatureVerificati
 }
 
 fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) -> bool {
-    let authorization = get_header(request, "Authorization", None);
+    let authorization = get_header(request.headers(), "Authorization", None);
     if authorization.is_empty() {
         tracing::debug!("SignatureVerification Failed: Authorization header is missing or empty");
         return false;
@@ -116,12 +116,12 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_h
     let canonical_headers = signed_headers
         .iter()
         .map(|h| {
-            let header_value = get_header(request, *h, None);
+            let header_value = get_header(request.headers(), *h, None);
             format!("{}:{}\n", h.to_lowercase(), header_value)
         })
         .collect::<String>();
 
-    let content_hash = get_header(request, "X-Amz-Content-Sha256", Some("UNSIGNED-PAYLOAD".to_string()));
+    let content_hash = get_header(request.headers(), "X-Amz-Content-Sha256", Some("UNSIGNED-PAYLOAD".to_string()));
 
     let canonical_request_string = [
         request.method().as_str(),
@@ -145,7 +145,7 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_h
 
     return [
         "AWS4-HMAC-SHA256",
-        get_header(request, "X-Amz-Date", None).as_str(),
+        get_header(request.headers(), "X-Amz-Date", None).as_str(),
         credentials_scope.as_str(),
         canonical_request_hash.as_str(),
     ].join("\n");

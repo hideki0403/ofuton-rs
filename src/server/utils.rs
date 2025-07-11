@@ -1,7 +1,7 @@
-use axum::{body::Body, extract::Request};
+use axum::http::{HeaderMap, HeaderValue};
 
-pub fn get_header(request: &Request<Body>, header_name: &str, fallback: Option<String>) -> String {
-    request.headers().get(header_name)
+pub fn get_header(header: &HeaderMap<HeaderValue>, header_name: &str, fallback: Option<String>) -> String {
+    header.get(header_name)
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_string())
         .unwrap_or(fallback.unwrap_or_default())

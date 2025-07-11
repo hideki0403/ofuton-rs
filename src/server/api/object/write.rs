@@ -55,10 +55,11 @@ pub async fn write_handler(Path(object_path): Path<String>, request: Request<Bod
         return Ok((StatusCode::BAD_REQUEST, "unknown operation").into_response());
     }
 
-    let mime_type = get_header(&request, "Content-Type", Some("application/octet-stream".to_string()));
-    let content_size = get_header(&request, "Content-Length", None).parse::<i64>().unwrap_or(0);
-    let filename = parse_content_disposition(get_header(&request, "Content-Disposition", None).as_str()).unwrap_or("unknown".to_string());
-    let (_, body) = request.into_parts();
+    tracing::debug!("Operation: {:?}", operation);
+
+    let mime_type = get_header(&parts.headers, "Content-Type", Some("application/octet-stream".to_string()));
+    let content_size = get_header(&parts.headers, "Content-Length", None).parse::<i64>().unwrap_or(0);
+    let filename = parse_content_disposition(get_header(&parts.headers, "Content-Disposition", None).as_str()).unwrap_or("unknown".to_string());
 
     match operation {
         OperationType::PutObject => {
