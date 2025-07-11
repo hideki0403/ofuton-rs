@@ -1,7 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 use axum::{body::Body, extract::State, http::{Request, Uri}, middleware::Next, response::Response};
+use chrono::{NaiveDateTime, Utc};
 use sha2::{Sha256, Digest};
 use hmac::{Hmac, Mac};
+use crate::config;
 use crate::server::utils::get_header;
 
 #[derive(Clone)]
@@ -41,6 +43,13 @@ fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) 
 
     if credentials[0] != access_key {
         tracing::debug!("SignatureVerification Failed: Access key mismatch");
+        return false;
+    }
+
+    let sigined_datetime = NaiveDateTime::parse_from_str(&get_header(request.headers(), "X-Amz-Date", None), "%Y%m%dT%H%M%SZ");
+    if sigined_datetime.is_err() || (Utc::now().naive_utc() - sigined_datetime.unwrap()).num_seconds() > config::CONFIG.bucket.request_expiration_seconds {
+        tracing::debug!("SignatureVerification Failed: Signature date is invalid or expires");
+        tracing::debug!("Err: {}", sigined_datetime.unwrap_err());
         return false;
     }
 
