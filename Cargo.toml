@@ -28,6 +28,7 @@ hmac = "0.12"
 urlencoding = "2.1"
 tokio-stream = "0.1"
 chrono = "0.4"
+regex = "1.11"
 
 [dependencies.tokio]
 version = "1.46"

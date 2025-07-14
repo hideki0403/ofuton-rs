@@ -2118,6 +2118,7 @@ dependencies = [
  "hmac",
  "migration",
  "once_cell",
+ "regex",
  "sea-orm",
  "sentry",
  "serde",
