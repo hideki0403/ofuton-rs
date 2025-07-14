@@ -8,6 +8,9 @@ publish = false
 name = "migration"
 path = "src/lib.rs"
 
+[lints.rust]
+unused_imports = "allow"
+
 [dependencies]
 async-std = { version = "1", features = ["attributes", "tokio1"] }
 
