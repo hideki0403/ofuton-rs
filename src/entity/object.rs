@@ -13,6 +13,7 @@ pub struct Model {
     pub content_size: i64,
     pub mime_type: String,
     pub internal_filename: String,
+    pub encoded_filename: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
