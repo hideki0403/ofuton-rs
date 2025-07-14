@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::*;
 
 mod m20250702_134901_create_objects_table;
 mod m20250705_083629_add_internal_filename_column_to_object_table;
+mod m20250712_185118_add_encoded_filename_column_to_object_table;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20250702_134901_create_objects_table::Migration),
             Box::new(m20250705_083629_add_internal_filename_column_to_object_table::Migration),
+            Box::new(m20250712_185118_add_encoded_filename_column_to_object_table::Migration),
         ]
     }
 }
