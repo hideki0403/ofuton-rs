@@ -38,15 +38,15 @@ pub async fn listen() {
     };
 
     let write_routes = Router::new()
-        .route("/{*object}", routing::post(api::object::write::write_handler).put(api::object::write::write_handler).delete(api::object::write::write_handler))
-        .layer(axum::middleware::from_fn(middleware::multipart::multipart_state_manager))
-        .layer(DefaultBodyLimit::max((conf.bucket.max_upload_size_mb * 1024 * 1024).try_into().unwrap()))
-        .layer(axum::middleware::from_fn_with_state(verify_signatures, middleware::signature::signature_verification));
+        .route("/{bucket}/{*object}", routing::post(api::object::write::write_handler).put(api::object::write::write_handler).delete(api::object::write::write_handler))
+        .route_layer(DefaultBodyLimit::max((conf.bucket.max_upload_size_mb * 1024 * 1024).try_into().unwrap()))
+        .route_layer(axum::middleware::from_fn(middleware::multipart::multipart_state_manager))
+        .route_layer(axum::middleware::from_fn_with_state(verify_signatures, middleware::signature::signature_verification));
 
     let app = Router::new()
         .route("/", api::r#static::index())
         .route("/robots.txt", api::r#static::robots_txt())
-        .route("/{*object}", routing::get(api::object::read::read_handler).head(api::object::read::read_handler))
+        .route("/{bucket}/{*object}", routing::get(api::object::read::read_handler).head(api::object::read::read_handler))
         .merge(write_routes)
         .layer(axum::middleware::from_fn(middleware::logger::request_logger))
         .layer(
@@ -57,7 +57,7 @@ pub async fn listen() {
                             parent: None,
                             "{} {} {} ({:.1}ms)",
                             request_logger.method,
-                            response.status(),
+                            response.status().as_str(),
                             request_logger.uri,
                             latency.as_secs_f64() * 1000.0
                         );
