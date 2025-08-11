@@ -33,7 +33,7 @@ pub struct ReadObjectData {
 pub struct WriteObjectData {
     pub binary: BodyDataStream,
     pub path: String,
-    pub filename: String,
+    pub filename: Option<String>,
     pub encoded_filename: Option<String>,
     pub content_size: i64,
     pub mime_type: String,
@@ -48,7 +48,7 @@ pub static MULTIPART_UPLOAD_STATE: LazyLock<MultipartUploadState> = LazyLock::ne
 #[derive(Clone)]
 pub struct MultipartUploadItem {
     pub path: String,
-    pub filename: String,
+    pub filename: Option<String>,
     pub encoded_filename: Option<String>,
     pub mime_type: String,
     pub last_upload_at: DateTime<Utc>,
@@ -107,7 +107,7 @@ pub async fn put_object(data: WriteObjectData) -> Result<(), Error> {
     return Ok(());
 }
 
-pub fn create_multipart_upload(path: String, filename: String, encoded_filename: Option<String>, mime_type: String) -> String {
+pub fn create_multipart_upload(path: String, filename: Option<String>, encoded_filename: Option<String>, mime_type: String) -> String {
     let upload_id = Uuid::new_v4().to_string();
     let item = MultipartUploadItem {
         path,

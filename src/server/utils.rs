@@ -48,14 +48,22 @@ pub fn parse_content_disposition(content_disposition: &str) -> ContentDispositio
     return result;
 }
 
-pub fn build_content_disposition_filename(filename: String, encoded_filename: Option<String>) -> String {
-    if filename.is_empty() {
-        return "".to_string();
+pub fn build_content_disposition_filename(filename: Option<String>, encoded_filename: Option<String>) -> Vec<String> {
+    let mut result = vec![];
+
+    if filename.is_none() {
+        return result;
     }
 
-    if let Some(encoded) = encoded_filename {
-        return format!("filename=\"{}\"; filename*=utf-8''{}", filename, encoded);
-    } else {
-        return format!("filename=\"{}\"", filename);
+    let filename = filename.unwrap();
+    if filename.is_empty() {
+        return result;
     }
+
+    result.push(format!("filename=\"{}\"", filename));
+    if let Some(encoded) = encoded_filename {
+        result.push(format!("filename*=utf-8''{}", encoded));
+    }
+
+    return result;
 }

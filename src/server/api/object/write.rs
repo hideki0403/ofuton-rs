@@ -94,7 +94,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
                 path: object_path,
                 mime_type,
                 content_size,
-                filename: content_disposition.filename.clone().unwrap_or("unknown".to_string()),
+                filename: content_disposition.filename.clone(),
                 encoded_filename: content_disposition.encoded_filename.clone(),
             };
 
@@ -106,7 +106,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             return Ok(StatusCode::CREATED.into_response());
         }
         OperationType::CreateMultipartUpload => {
-            let upload_id = storage::create_multipart_upload(object_path.clone(), content_disposition.filename.unwrap_or("unknown".to_string()), content_disposition.encoded_filename, mime_type);
+            let upload_id = storage::create_multipart_upload(object_path.clone(), content_disposition.filename, content_disposition.encoded_filename, mime_type);
 
             let (bucket, key) = object_path.split_once('/').unwrap_or(("", &object_path));
             let response = S3InitiateMultipartUploadResult {

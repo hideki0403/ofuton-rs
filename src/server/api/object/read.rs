@@ -21,9 +21,12 @@ pub async fn read_handler(method: Method, range: Option<TypedHeader<Range>>, req
     let mut headers = HeaderMap::new();
     headers.insert("Cache-Control", "max-age=31536000, immutable".parse().unwrap());
     headers.insert("Content-Type", object_data.metadata.mime_type.parse().unwrap());
-    headers.insert("Content-Disposition", format!("inline; {}", build_content_disposition_filename(object_data.metadata.filename, object_data.metadata.encoded_filename)).parse().unwrap());
     headers.insert("ETag", format!("\"{}\"", object_data.metadata.internal_filename).parse().unwrap());
     headers.insert("Accept-Ranges", "bytes".parse().unwrap());
+
+    let mut content_disposition = vec!["inline".to_string()];
+    content_disposition.extend(build_content_disposition_filename(object_data.metadata.filename, object_data.metadata.encoded_filename));
+    headers.insert("Content-Disposition", content_disposition.join("; ").parse().unwrap());
 
     if is_head_request {
         headers.insert("Content-Length", object_data.metadata.content_size.to_string().parse().unwrap());
