@@ -183,6 +183,20 @@ pub async fn abort_multipart_upload(upload_id: String) -> Result<(), Error> {
     return Ok(());
 }
 
+pub async fn delete_object(path: String) -> Result<(), Error> {
+    let metadata = metadata::get_metadata_by_path(&path).await;
+    if metadata.is_none() {
+        return Err(anyhow::anyhow!("Object metadata not found for path: {}", path));
+    }
+    let metadata = metadata.unwrap();
+
+    file::delete_object(metadata.internal_filename.clone(), false).await?;
+    metadata::delete_metadata(metadata).await?;
+
+    tracing::debug!("Object deleted successfully at path: {}", path);
+    return Ok(());
+}
+
 static IS_CLEANUP_REGISTERED: AtomicBool = AtomicBool::new(false);
 
 fn internal_cleanup() -> Pin<Box<dyn Future<Output=Result<(), ()>> + Send>> {

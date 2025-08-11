@@ -186,6 +186,14 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             storage::abort_multipart_upload(upload_id.unwrap()).await?;
             return Ok(StatusCode::NO_CONTENT.into_response());
         }
+        OperationType::DeleteObject => {
+            let result = storage::delete_object(object_path).await;
+            if let Err(e) = result {
+                return Err(e.into());
+            }
+
+            return Ok(StatusCode::NO_CONTENT.into_response());
+        }
         _ => {
             return Ok((StatusCode::BAD_REQUEST, "Unknown operation type").into_response());
         }
