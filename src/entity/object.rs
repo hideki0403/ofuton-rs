@@ -9,11 +9,11 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(unique)]
     pub path: String,
-    pub filename: String,
     pub content_size: i64,
     pub mime_type: String,
     pub internal_filename: String,
     pub encoded_filename: Option<String>,
+    pub filename: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
