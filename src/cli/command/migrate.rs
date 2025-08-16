@@ -76,7 +76,7 @@ async fn migrate_objects_recursive(base_dir: &str, current_dir: &str, items: &mu
     while let Some(entry) = entries.next_entry().await? {
         let filetype = entry.file_type().await?;
         if filetype.is_dir() {
-            migrate_objects_recursive(&base_dir, &entry.path().to_string_lossy(), items, pb).await?;
+            migrate_objects_recursive(base_dir, &entry.path().to_string_lossy(), items, pb).await?;
             continue;
         } else if !filetype.is_file() {
             continue;
@@ -107,7 +107,7 @@ async fn migrate_objects_recursive(base_dir: &str, current_dir: &str, items: &mu
 
         items.push(MigrateObject {
             path: path.clone(),
-            internal_filename: internal_filename,
+            internal_filename,
             model: object,
         });
 

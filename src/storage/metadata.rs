@@ -1,4 +1,3 @@
-use entity;
 use anyhow::Error;
 use sea_orm::ModelTrait;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
@@ -15,7 +14,7 @@ pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {
         return None;
     }
 
-    return object_data.unwrap();
+    object_data.unwrap()
 }
 
 pub async fn create_metadata(model: entity::object::ActiveModel) -> Result<(), Error> {
@@ -28,7 +27,7 @@ pub async fn create_metadata(model: entity::object::ActiveModel) -> Result<(), E
         return Err(insert_result.unwrap_err().into());
     }
 
-    return Ok(());
+    Ok(())
 }
 
 #[allow(dead_code)] // TODO: Remove
@@ -43,7 +42,7 @@ pub async fn create_metadata_many(models: Vec<entity::object::ActiveModel>) -> R
         return Err(insert_result.unwrap_err().into());
     }
 
-    return Ok(());
+    Ok(())
 }
 
 pub async fn delete_metadata(model: entity::object::Model) -> Result<(), Error> {
@@ -54,5 +53,5 @@ pub async fn delete_metadata(model: entity::object::Model) -> Result<(), Error> 
         return Err(delete_result.unwrap_err().into());
     }
 
-    return Ok(());
+    Ok(())
 }

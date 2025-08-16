@@ -63,7 +63,7 @@ pub async fn execute(metadata_path: String) {
     let db = database::get_db();
     let chunk_size = 100;
 
-    for (_, chunk) in drive_files.chunks(chunk_size).enumerate() {
+    for chunk in drive_files.chunks(chunk_size) {
         let txn = match db.begin().await {
             Ok(txn) => txn,
             Err(e) => {

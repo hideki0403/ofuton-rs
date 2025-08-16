@@ -18,7 +18,7 @@ pub async fn read_object(internal_filename: String) -> Result<File, Error> {
     }
 
     tracing::debug!("Object read successfully from path: {}", path.display());
-    return Ok(file.unwrap());
+    Ok(file.unwrap())
 }
 
 pub async fn write_object(internal_filename: String, mut stream: BodyDataStream, is_multipart: bool) -> Result<(), Error> {
@@ -27,10 +27,8 @@ pub async fn write_object(internal_filename: String, mut stream: BodyDataStream,
         return Err(anyhow::anyhow!("File already exists at path: {}", path.display()));
     }
 
-    if is_multipart && let Some(parent) = path.parent() {
-        if !parent.exists() {
-            fs::create_dir_all(parent).await?;
-        }
+    if is_multipart && let Some(parent) = path.parent() && !parent.exists() {
+        fs::create_dir_all(parent).await?;
     }
 
     let mut writer = BufWriter::new(File::create(&path).await?);
@@ -41,12 +39,12 @@ pub async fn write_object(internal_filename: String, mut stream: BodyDataStream,
     writer.flush().await?;
 
     tracing::debug!("Object written successfully to path: {}", path.display());
-    return Ok(());
+    Ok(())
 }
 
-pub async fn merge_partial_uploads(upload_id: &String, internal_filename: &String) -> Result<u64, Error> {
-    let object_path = resolve_path(internal_filename.clone(), false);
-    let multipart_path = resolve_path(upload_id.clone(), true);
+pub async fn merge_partial_uploads(upload_id: &str, internal_filename: &str) -> Result<u64, Error> {
+    let object_path = resolve_path(internal_filename.to_owned(), false);
+    let multipart_path = resolve_path(upload_id.to_owned(), true);
     let temporary_output_path = multipart_path.join("object-merged.tmp");
 
     if !multipart_path.exists() {
@@ -109,7 +107,7 @@ pub async fn delete_object(internal_path: String, is_multipart: bool) -> Result<
     }
 
     tracing::debug!("Deleted object at path: {}", path.display());
-    return Ok(());
+    Ok(())
 }
 
 fn resolve_path(internal_path: String, is_multipart: bool) -> PathBuf {

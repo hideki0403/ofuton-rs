@@ -17,7 +17,6 @@ use chrono::{DateTime, TimeDelta, Utc};
 use sea_orm::ActiveValue::Set;
 use tokio::{fs::File, time};
 use uuid::Uuid;
-use entity;
 use crate::config;
 
 mod file;
@@ -104,7 +103,7 @@ pub async fn put_object(data: WriteObjectData) -> Result<(), Error> {
     metadata::create_metadata(metadata).await?;
     file::write_object(internal_path.clone(), data.binary, false).await?;
 
-    return Ok(());
+    Ok(())
 }
 
 pub fn create_multipart_upload(path: String, filename: Option<String>, encoded_filename: Option<String>, mime_type: String) -> String {
@@ -121,7 +120,7 @@ pub fn create_multipart_upload(path: String, filename: Option<String>, encoded_f
     tracing::debug!("Multipart upload created with ID: {}", upload_id);
 
     tokio::spawn(internal_cleanup());
-    return upload_id;
+    upload_id
 }
 
 pub async fn upload_part(upload_id: String, number: u16, binary: BodyDataStream) -> Result<(), Error> {
@@ -134,8 +133,8 @@ pub async fn upload_part(upload_id: String, number: u16, binary: BodyDataStream)
         item.unwrap().last_upload_at = Utc::now();
     }
 
-    file::write_object(format!("{}/{}.part", upload_id, number), binary, true).await?;
-    return Ok(());
+    file::write_object(format!("{upload_id}/{number}.part"), binary, true).await?;
+    Ok(())
 }
 
 pub async fn complete_multipart_upload(upload_id: String) -> Result<(), Error> {
@@ -165,7 +164,7 @@ pub async fn complete_multipart_upload(upload_id: String) -> Result<(), Error> {
     file::delete_object(upload_id.clone(), true).await?;
 
     tracing::debug!("Multipart upload completed for ID: {}", upload_id);
-    return Ok(());
+    Ok(())
 }
 
 pub async fn abort_multipart_upload(upload_id: String) -> Result<(), Error> {
@@ -176,11 +175,11 @@ pub async fn abort_multipart_upload(upload_id: String) -> Result<(), Error> {
 
     if let Err(e) = file::delete_object(upload_id.clone(), true).await {
         tracing::error!("Failed to remove multipart upload directory: {}", e);
-        return Err(e.into());
+        return Err(e);
     }
 
     tracing::debug!("Multipart upload aborted for ID: {}", upload_id);
-    return Ok(());
+    Ok(())
 }
 
 pub async fn delete_object(path: String) -> Result<(), Error> {
@@ -194,7 +193,7 @@ pub async fn delete_object(path: String) -> Result<(), Error> {
     metadata::delete_metadata(metadata).await?;
 
     tracing::debug!("Object deleted successfully at path: {}", path);
-    return Ok(());
+    Ok(())
 }
 
 static IS_CLEANUP_REGISTERED: AtomicBool = AtomicBool::new(false);

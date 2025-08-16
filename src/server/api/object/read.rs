@@ -37,5 +37,5 @@ pub async fn read_handler(method: Method, range: Option<TypedHeader<Range>>, req
     let mut response = Ranged::new(range, KnownSize::file(object_data.file.unwrap()).await.unwrap()).into_response();
     response.headers_mut().extend(headers);
 
-    return Ok(response);
+    Ok(response)
 }

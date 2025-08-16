@@ -28,5 +28,5 @@ pub async fn multipart_state_manager(Query(params): Query<ReqParams>, mut reques
     };
 
     request.extensions_mut().insert(state);
-    return next.run(request).await;
+    next.run(request).await
 }

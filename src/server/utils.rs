@@ -45,7 +45,7 @@ pub fn parse_content_disposition(content_disposition: &str) -> ContentDispositio
         .map(|filename| filename.trim_matches('"').to_string());
 
     result.filename = filename;
-    return result;
+    result
 }
 
 pub fn build_content_disposition_filename(filename: Option<String>, encoded_filename: Option<String>) -> Vec<String> {
@@ -60,10 +60,10 @@ pub fn build_content_disposition_filename(filename: Option<String>, encoded_file
         return result;
     }
 
-    result.push(format!("filename=\"{}\"", filename));
+    result.push(format!("filename=\"{filename}\""));
     if let Some(encoded) = encoded_filename {
-        result.push(format!("filename*=utf-8''{}", encoded));
+        result.push(format!("filename*=utf-8''{encoded}"));
     }
 
-    return result;
+    result
 }

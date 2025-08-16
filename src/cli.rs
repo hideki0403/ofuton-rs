@@ -32,7 +32,7 @@ pub enum MigrationCommand {
 }
 
 pub fn handle() -> Option<MigrationCommand> {
-    return Args::parse().command;
+    Args::parse().command
 }
 
 pub async fn execute(command: MigrationCommand) {

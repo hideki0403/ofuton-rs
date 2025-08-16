@@ -14,5 +14,5 @@ pub async fn request_logger(request: Request<Body>, next: Next) -> Response {
 
     let mut response = next.run(request).await;
     response.extensions_mut().insert(request_logger);
-    return response;
+    response
 }

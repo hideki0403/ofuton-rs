@@ -15,5 +15,5 @@ pub fn create_progress_bar(total: u64) -> ProgressBar {
         .unwrap()
         .progress_chars("#>-"));
 
-    return pb;
+    pb
 }

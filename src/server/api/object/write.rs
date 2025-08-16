@@ -103,7 +103,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
                 return Err(e.into());
             }
 
-            return Ok(StatusCode::CREATED.into_response());
+            Ok(StatusCode::CREATED.into_response())
         }
         OperationType::CreateMultipartUpload => {
             let upload_id = storage::create_multipart_upload(object_path.clone(), content_disposition.filename, content_disposition.encoded_filename, mime_type);
@@ -123,7 +123,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             let mut response = Response::new(xml_response.unwrap());
             response.headers_mut().insert("Content-Type", "application/xml".parse().unwrap());
 
-            return Ok(response.into_response());
+            Ok(response.into_response())
         }
         OperationType::UploadPart => {
             if multipart_upload_state.upload_id.is_none() || multipart_upload_state.part_number.is_none() {
@@ -144,7 +144,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
                 .body(Body::empty())
                 .unwrap();
 
-            return Ok(response);
+            Ok(response)
         }
         OperationType::CompleteMultipartUpload => {
             let upload_id = multipart_upload_state.upload_id.clone();
@@ -175,7 +175,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             let mut response = Response::new(xml_response.unwrap());
             response.headers_mut().insert("Content-Type", "application/xml".parse().unwrap());
 
-            return Ok(response.into_response());
+            Ok(response.into_response())
         }
         OperationType::AbortMultipartUpload => {
             let upload_id = multipart_upload_state.upload_id.clone();
@@ -184,7 +184,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             }
 
             storage::abort_multipart_upload(upload_id.unwrap()).await?;
-            return Ok(StatusCode::NO_CONTENT.into_response());
+            Ok(StatusCode::NO_CONTENT.into_response())
         }
         OperationType::DeleteObject => {
             let result = storage::delete_object(object_path).await;
@@ -192,10 +192,10 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
                 return Err(e.into());
             }
 
-            return Ok(StatusCode::NO_CONTENT.into_response());
+            Ok(StatusCode::NO_CONTENT.into_response())
         }
         _ => {
-            return Ok((StatusCode::BAD_REQUEST, "Unknown operation type").into_response());
+            Ok((StatusCode::BAD_REQUEST, "Unknown operation type").into_response())
         }
     }
 }

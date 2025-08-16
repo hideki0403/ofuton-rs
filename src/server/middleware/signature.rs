@@ -22,7 +22,7 @@ pub async fn signature_verification(State(signatures): State<SignatureVerificati
             .unwrap();
     }
 
-    return next.run(request).await;
+    next.run(request).await
 }
 
 fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) -> bool {
@@ -58,7 +58,7 @@ fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) 
 
     let string_to_sign = get_string_to_sign(request, &credentials, &signed_headers);
 
-    let mut mac = HmacSha256::new_from_slice(format!("AWS4{}", secret_key).as_bytes()).unwrap();
+    let mut mac = HmacSha256::new_from_slice(format!("AWS4{secret_key}").as_bytes()).unwrap();
     mac.update(credentials[1].as_bytes()); // Date
     let date_key = mac.finalize().into_bytes();
 
@@ -78,13 +78,13 @@ fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) 
     mac.update(string_to_sign.as_bytes());
     let signature_bytes = mac.finalize().into_bytes();
 
-    let calculated_signature = format!("{:x}", signature_bytes);
+    let calculated_signature = format!("{signature_bytes:x}");
     let verify_result = calculated_signature == *signature;
     if !verify_result {
         tracing::debug!("SignatureVerification Failed: Signature mismatch. Expected: {}, Got: {}", calculated_signature, signature);
     }
 
-    return verify_result;
+    verify_result
 }
 
 fn get_components(authorization: &str) -> HashMap<&str, &str> {
@@ -94,10 +94,10 @@ fn get_components(authorization: &str) -> HashMap<&str, &str> {
     }
 
     let components_str = trimmed_authorization.unwrap().1;
-    return components_str
+    components_str
         .split(',')
         .filter_map(|s| s.trim().split_once('='))
-        .collect();
+        .collect()
 }
 
 fn get_query_string(uri: &Uri) -> String {
@@ -109,14 +109,14 @@ fn get_query_string(uri: &Uri) -> String {
         .collect::<Vec<String>>();
 
     pairs.sort();
-    return pairs.join("&");
+    pairs.join("&")
 }
 
-fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_headers: &Vec<&str>) -> String {
+fn get_string_to_sign(request: &Request<Body>, credentials: &[&str], signed_headers: &Vec<&str>) -> String {
     let canonical_headers = signed_headers
         .iter()
         .map(|h| {
-            let header_value = get_header(request.headers(), *h, None);
+            let header_value = get_header(request.headers(), h, None);
             format!("{}:{}\n", h.to_lowercase(), header_value)
         })
         .collect::<String>();
@@ -126,7 +126,7 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_h
     let canonical_request_string = [
         request.method().as_str(),
         request.uri().path(),
-        &get_query_string(&request.uri()),
+        &get_query_string(request.uri()),
         canonical_headers.as_str(),
         signed_headers.iter().map(|h| h.to_lowercase()).collect::<Vec<String>>().join(";").as_str(),
         content_hash.as_str(),
@@ -143,10 +143,10 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &Vec<&str>, signed_h
         credentials[4], // "aws4_request"
     ].join("/");
 
-    return [
+    [
         "AWS4-HMAC-SHA256",
         get_header(request.headers(), "X-Amz-Date", None).as_str(),
         credentials_scope.as_str(),
         canonical_request_hash.as_str(),
-    ].join("\n");
+    ].join("\n")
 }
