@@ -1,6 +1,7 @@
 use tokio;
 use sentry;
 
+mod cli;
 mod database;
 mod entity;
 mod server;
@@ -32,18 +33,26 @@ fn main() {
         });
     }
 
+    // Handle argments
+    let command = cli::handle();
+
     // Start the Tokio runtime
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .expect("Failed to create Tokio runtime")
         .block_on(async {
-            run().await;
+            run(command).await;
         });
 }
 
-async fn run() {
+async fn run(command: Option<cli::MigrationCommand>) {
     database::initialize().await.expect("Failed to initialize the database");
     storage::initialize().await;
-    server::listen().await;
+
+    if command.is_none() {
+        server::listen().await;
+    } else {
+        cli::execute(command.unwrap()).await;
+    }
 }
