@@ -12,12 +12,5 @@ path = "src/lib.rs"
 unused_imports = "allow"
 
 [dependencies]
-async-std = { version = "1", features = ["attributes", "tokio1"] }
-
-[dependencies.sea-orm-migration]
-version = "1.1.0"
-features = [
-  "sqlx-postgres",
-  "sqlx-sqlite",
-  "runtime-tokio-rustls",
-]
+async-std = { workspace = true }
+sea-orm-migration = { workspace = true }
