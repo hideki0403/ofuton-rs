@@ -6,9 +6,9 @@ use sea_orm::EntityTrait;
 use tokio::fs;
 use async_recursion::async_recursion;
 use mime_guess;
+use entity;
 use crate::cli::utils;
 use crate::database;
-use crate::entity;
 use crate::config;
 
 #[derive(Debug)]

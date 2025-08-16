@@ -4,10 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = [".", "migration"]
+members = [".", "migration", "entity"]
+
+[workspace.dependencies]
+sea-orm = { version = "1.1", features = ["sqlx-postgres", "sqlx-sqlite", "runtime-tokio-rustls", "macros"] }
 
 [dependencies]
 migration = { path = "migration" }
+entity = { path = "entity" }
+sea-orm = { workspace = true }
+tokio = { version = "1.47", features = ["full"] }
 serde = {version = "1.0", features = ["derive"] }
 serde-xml-rs = "0.8"
 once_cell = "1.21"
@@ -36,11 +42,3 @@ async-recursion = "1.1"
 dialoguer = "0.11"
 csv = "1.3"
 url = "2.5"
-
-[dependencies.tokio]
-version = "1.47"
-features = ["full"]
-
-[dependencies.sea-orm]
-version = "1.1"
-features = ["sqlx-postgres", "sqlx-sqlite", "runtime-tokio-rustls", "macros"]

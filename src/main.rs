@@ -4,7 +4,6 @@ use tracing_subscriber::filter::LevelFilter;
 
 mod cli;
 mod database;
-mod entity;
 mod server;
 mod storage;
 mod config;

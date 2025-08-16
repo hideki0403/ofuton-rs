@@ -1,7 +1,7 @@
+use entity;
 use anyhow::Error;
 use sea_orm::ModelTrait;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
-use crate::entity;
 use crate::database;
 
 pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {

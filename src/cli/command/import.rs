@@ -1,3 +1,4 @@
+use entity;
 use dialoguer::Confirm;
 use sea_orm::ActiveValue::Set;
 use sea_orm::ColumnTrait;
@@ -7,7 +8,6 @@ use sea_orm::TransactionTrait;
 use serde::Deserialize;
 use url::Url;
 use crate::database;
-use crate::entity;
 use crate::cli::utils;
 
 #[derive(Debug, Deserialize)]

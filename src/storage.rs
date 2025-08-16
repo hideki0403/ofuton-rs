@@ -17,7 +17,7 @@ use chrono::{DateTime, TimeDelta, Utc};
 use sea_orm::ActiveValue::Set;
 use tokio::{fs::File, time};
 use uuid::Uuid;
-use crate::entity;
+use entity;
 use crate::config;
 
 mod file;

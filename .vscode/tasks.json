@@ -43,8 +43,8 @@
         {
             "id": "entity_output_path",
             "type": "promptString",
-            "description": "Enter output path for entity files (e.g., src/entity)",
-            "default": "src/entity",
+            "description": "Enter output path for entity files (e.g., entity/src)",
+            "default": "entity/src",
         }
     ],
 }
