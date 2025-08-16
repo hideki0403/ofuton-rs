@@ -31,6 +31,7 @@ pub async fn create_metadata(model: entity::object::ActiveModel) -> Result<(), E
     return Ok(());
 }
 
+#[allow(dead_code)] // TODO: Remove
 pub async fn create_metadata_many(models: Vec<entity::object::ActiveModel>) -> Result<(), Error> {
     let insert_result = entity::object::Entity::insert_many(models)
         .on_empty_do_nothing()
