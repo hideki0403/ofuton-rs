@@ -50,12 +50,18 @@ pub struct CFGSentry {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct CFGDebug {
+    pub log_level: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub server: CFGServer,
     pub database: CFGDatabase,
     pub bucket: CFGBucket,
     pub account: CFGAccount,
     pub sentry: CFGSentry,
+    pub debug: Option<CFGDebug>,
 }
 
 impl AppConfig {

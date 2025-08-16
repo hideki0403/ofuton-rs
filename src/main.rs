@@ -1,5 +1,6 @@
 use tokio;
 use sentry;
+use tracing_subscriber::filter::LevelFilter;
 
 mod cli;
 mod database;
@@ -10,20 +11,27 @@ mod config;
 mod resource;
 
 fn main() {
+    let conf = config::CONFIG.clone();
+
     // Logging setup
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-        let level = if cfg!(debug_assertions) {
-            "debug"
-        } else {
-            "info"
-        };
-        tracing_subscriber::EnvFilter::new(level)
+        let level = conf.debug.as_ref()
+            .and_then(|d| d.log_level.as_ref())
+            .and_then(|s| s.parse::<LevelFilter>().ok())
+            .unwrap_or_else(|| {
+                if cfg!(debug_assertions) {
+                    LevelFilter::DEBUG
+                } else {
+                    LevelFilter::INFO
+                }
+            });
+
+        tracing_subscriber::EnvFilter::new(level.to_string())
     });
 
     tracing_subscriber::fmt().with_env_filter(filter).init();
 
     // Sentry setup
-    let conf = config::CONFIG.clone();
     if !conf.sentry.dsn.is_empty() && let Ok(dsn) = sentry::IntoDsn::into_dsn(conf.sentry.dsn) {
         tracing::info!("Sentry logging is enabled");
         let _guard = sentry::init(sentry::ClientOptions {
