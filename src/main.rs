@@ -53,9 +53,9 @@ async fn run(command: Option<cli::MigrationCommand>) {
     database::initialize().await.expect("Failed to initialize the database");
     storage::initialize().await;
 
-    if command.is_none() {
-        server::listen().await;
+    if let Some(cmd) = command {
+        cli::execute(cmd).await;
     } else {
-        cli::execute(command.unwrap()).await;
+        server::listen().await;
     }
 }

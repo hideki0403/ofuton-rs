@@ -64,10 +64,10 @@ pub async fn initialize() {
     }
 
     let temp_path = base_path.join(".multipart");
-    if temp_path.exists() {
-        if let Err(e) = fs::remove_dir_all(&temp_path) {
-            tracing::error!("Failed to remove expired multipart uploads: {}", e);
-        }
+    if temp_path.exists() &&
+        let Err(e) = fs::remove_dir_all(&temp_path)
+    {
+        tracing::error!("Failed to remove expired multipart uploads: {}", e);
     }
 }
 

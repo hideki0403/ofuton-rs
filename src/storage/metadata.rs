@@ -8,12 +8,8 @@ pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {
         .one(database::get_db())
         .await;
 
-    if object_data.is_err() {
-        tracing::error!(
-            "Failed to fetch object metadata for path '{}': {}",
-            path,
-            object_data.as_ref().err().unwrap()
-        );
+    if let Err(e) = object_data {
+        tracing::error!("Failed to fetch object metadata for path '{}': {}", path, e);
         return None;
     }
 
@@ -23,9 +19,9 @@ pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {
 pub async fn create_metadata(model: entity::object::ActiveModel) -> Result<(), Error> {
     let insert_result = entity::object::Entity::insert(model).exec(database::get_db()).await;
 
-    if insert_result.is_err() {
-        tracing::error!("Failed to create object metadata: {}", insert_result.as_ref().err().unwrap());
-        return Err(insert_result.unwrap_err().into());
+    if let Err(e) = insert_result {
+        tracing::error!("Failed to create object metadata: {}", e);
+        return Err(e.into());
     }
 
     Ok(())
@@ -38,9 +34,9 @@ pub async fn create_metadata_many(models: Vec<entity::object::ActiveModel>) -> R
         .exec(database::get_db())
         .await;
 
-    if insert_result.is_err() {
-        tracing::error!("Failed to create multiple object metadata: {}", insert_result.as_ref().err().unwrap());
-        return Err(insert_result.unwrap_err().into());
+    if let Err(e) = insert_result {
+        tracing::error!("Failed to create multiple object metadata: {}", e);
+        return Err(e.into());
     }
 
     Ok(())
@@ -49,9 +45,9 @@ pub async fn create_metadata_many(models: Vec<entity::object::ActiveModel>) -> R
 pub async fn delete_metadata(model: entity::object::Model) -> Result<(), Error> {
     let delete_result = model.delete(database::get_db()).await;
 
-    if delete_result.is_err() {
-        tracing::error!("Failed to delete object metadata: {}", delete_result.as_ref().err().unwrap());
-        return Err(delete_result.unwrap_err().into());
+    if let Err(e) = delete_result {
+        tracing::error!("Failed to delete object metadata: {}", e);
+        return Err(e.into());
     }
 
     Ok(())
