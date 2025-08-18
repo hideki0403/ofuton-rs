@@ -13,25 +13,38 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  check:
+  rustfmt:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install rust toolchain
+      - name: Install nightly toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: nightly
-          components: clippy, rustfmt
+          components: rustfmt
 
       - name: Cache rust dependencies
         uses: Swatinem/rust-cache@v2
-        with:
-          key: toolchain-nightly
 
       - name: Run rustfmt
         run: cargo fmt --all -- --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: clippy
+
+      - name: Cache rust dependencies
+        uses: Swatinem/rust-cache@v2
 
       - name: Run clippy
         run: cargo clippy --no-deps --all-features -- -D warnings
@@ -39,7 +52,8 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     needs:
-      - check
+      - rustfmt
+      - clippy
     strategy:
       matrix:
         os:
