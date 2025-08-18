@@ -15,7 +15,6 @@ async-std = { version = "1", features = ["attributes", "tokio1"] }
 migration = { path = "migration" }
 entity = { path = "entity" }
 sea-orm = { workspace = true }
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 tokio = { version = "1.47", features = ["full"] }
 serde = {version = "1.0", features = ["derive"] }
 serde-xml-rs = "0.8"
