@@ -1,14 +1,9 @@
-use entity;
+use crate::{cli::utils, database};
 use dialoguer::Confirm;
-use sea_orm::ActiveValue::Set;
-use sea_orm::ColumnTrait;
-use sea_orm::EntityTrait;
-use sea_orm::QueryFilter;
-use sea_orm::TransactionTrait;
+use entity;
+use sea_orm::{ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, TransactionTrait};
 use serde::Deserialize;
 use url::Url;
-use crate::database;
-use crate::cli::utils;
 
 #[derive(Debug, Deserialize)]
 struct DriveFile {
@@ -49,10 +44,7 @@ pub async fn execute(metadata_path: String) {
     }
 
     tracing::info!("Found {} entries. Ready to import.", drive_files.len());
-    let confirmation = Confirm::new()
-        .with_prompt("Continue?")
-        .interact()
-        .unwrap();
+    let confirmation = Confirm::new().with_prompt("Continue?").interact().unwrap();
 
     if !confirmation {
         tracing::info!("Import cancelled.");

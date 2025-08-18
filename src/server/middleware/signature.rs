@@ -1,10 +1,15 @@
-use std::{collections::HashMap, sync::Arc};
-use axum::{body::Body, extract::State, http::{Request, Uri}, middleware::Next, response::Response};
+use crate::{config, server::utils::get_header};
+use axum::{
+    body::Body,
+    extract::State,
+    http::{Request, Uri},
+    middleware::Next,
+    response::Response,
+};
 use chrono::{NaiveDateTime, Utc};
-use sha2::{Sha256, Digest};
 use hmac::{Hmac, Mac};
-use crate::config;
-use crate::server::utils::get_header;
+use sha2::{Digest, Sha256};
+use std::{collections::HashMap, sync::Arc};
 
 #[derive(Clone)]
 pub struct SignatureVerificationState {
@@ -16,10 +21,7 @@ type HmacSha256 = Hmac<Sha256>;
 
 pub async fn signature_verification(State(signatures): State<SignatureVerificationState>, request: Request<Body>, next: Next) -> Response {
     if !internal_verify(&request, &signatures.key, &signatures.secret) {
-        return Response::builder()
-            .status(403)
-            .body(Body::from("Forbidden: Invalid signature"))
-            .unwrap();
+        return Response::builder().status(403).body(Body::from("Forbidden: Invalid signature")).unwrap();
     }
 
     next.run(request).await
@@ -47,7 +49,9 @@ fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) 
     }
 
     let sigined_datetime = NaiveDateTime::parse_from_str(&get_header(request.headers(), "X-Amz-Date", None), "%Y%m%dT%H%M%SZ");
-    if sigined_datetime.is_err() || (Utc::now().naive_utc() - sigined_datetime.unwrap()).num_seconds() > config::CONFIG.bucket.request_expiration_seconds {
+    if sigined_datetime.is_err() ||
+        (Utc::now().naive_utc() - sigined_datetime.unwrap()).num_seconds() > config::CONFIG.bucket.request_expiration_seconds
+    {
         tracing::debug!("SignatureVerification Failed: Signature date is invalid or expires");
         tracing::debug!("Err: {}", sigined_datetime.unwrap_err());
         return false;
@@ -81,7 +85,11 @@ fn internal_verify(request: &Request<Body>, access_key: &str, secret_key: &str) 
     let calculated_signature = format!("{signature_bytes:x}");
     let verify_result = calculated_signature == *signature;
     if !verify_result {
-        tracing::debug!("SignatureVerification Failed: Signature mismatch. Expected: {}, Got: {}", calculated_signature, signature);
+        tracing::debug!(
+            "SignatureVerification Failed: Signature mismatch. Expected: {}, Got: {}",
+            calculated_signature,
+            signature
+        );
     }
 
     verify_result
@@ -94,14 +102,13 @@ fn get_components(authorization: &str) -> HashMap<&str, &str> {
     }
 
     let components_str = trimmed_authorization.unwrap().1;
-    components_str
-        .split(',')
-        .filter_map(|s| s.trim().split_once('='))
-        .collect()
+    components_str.split(',').filter_map(|s| s.trim().split_once('=')).collect()
 }
 
 fn get_query_string(uri: &Uri) -> String {
-    let mut pairs = uri.query().unwrap_or("")
+    let mut pairs = uri
+        .query()
+        .unwrap_or("")
         .split('&')
         .map(|s| s.split_once('=').unwrap_or((s, "")))
         .filter(|(k, _)| *k != "X-Amz-Signature")
@@ -128,9 +135,15 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &[&str], signed_head
         request.uri().path(),
         &get_query_string(request.uri()),
         canonical_headers.as_str(),
-        signed_headers.iter().map(|h| h.to_lowercase()).collect::<Vec<String>>().join(";").as_str(),
+        signed_headers
+            .iter()
+            .map(|h| h.to_lowercase())
+            .collect::<Vec<String>>()
+            .join(";")
+            .as_str(),
         content_hash.as_str(),
-    ].join("\n");
+    ]
+    .join("\n");
 
     let mut hasher = Sha256::new();
     hasher.update(canonical_request_string.as_bytes());
@@ -141,12 +154,14 @@ fn get_string_to_sign(request: &Request<Body>, credentials: &[&str], signed_head
         credentials[2], // Region
         credentials[3], // Service
         credentials[4], // "aws4_request"
-    ].join("/");
+    ]
+    .join("/");
 
     [
         "AWS4-HMAC-SHA256",
         get_header(request.headers(), "X-Amz-Date", None).as_str(),
         credentials_scope.as_str(),
         canonical_request_hash.as_str(),
-    ].join("\n")
+    ]
+    .join("\n")
 }

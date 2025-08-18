@@ -1,7 +1,10 @@
-use std::path::{Path, PathBuf};
 use anyhow::Error;
 use axum::body::BodyDataStream;
-use tokio::{fs::{self, File, OpenOptions}, io::{self, AsyncWriteExt, BufWriter}};
+use std::path::{Path, PathBuf};
+use tokio::{
+    fs::{self, File, OpenOptions},
+    io::{self, AsyncWriteExt, BufWriter},
+};
 use tokio_stream::StreamExt;
 
 use crate::config;
@@ -27,7 +30,10 @@ pub async fn write_object(internal_filename: String, mut stream: BodyDataStream,
         return Err(anyhow::anyhow!("File already exists at path: {}", path.display()));
     }
 
-    if is_multipart && let Some(parent) = path.parent() && !parent.exists() {
+    if is_multipart &&
+        let Some(parent) = path.parent() &&
+        !parent.exists()
+    {
         fs::create_dir_all(parent).await?;
     }
 
@@ -62,7 +68,7 @@ pub async fn merge_partial_uploads(upload_id: &str, internal_filename: &str) -> 
         if entry.file_type().await?.is_file() {
             file_list.push(entry.path());
         }
-    };
+    }
 
     file_list.sort_by(|a, b| {
         let a_name = a.file_name().unwrap().to_str().unwrap().replace(".part", "");

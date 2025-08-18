@@ -3,15 +3,15 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 pub fn get_header(header: &HeaderMap<HeaderValue>, header_name: &str, fallback: Option<String>) -> String {
-    header.get(header_name)
+    header
+        .get(header_name)
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_string())
         .unwrap_or(fallback.unwrap_or_default())
 }
 
-static CONTENT_DISPOSITION_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"filename\*=(?i)utf(?-i)-?8''(?<filename>.*?)(?:;|$)").expect("Failed to compile regex")
-});
+static CONTENT_DISPOSITION_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"filename\*=(?i)utf(?-i)-?8''(?<filename>.*?)(?:;|$)").expect("Failed to compile regex"));
 
 #[derive(Debug, Default)]
 pub struct ContentDisposition {
@@ -26,7 +26,9 @@ pub fn parse_content_disposition(content_disposition: &str) -> ContentDispositio
 
     let mut result = ContentDisposition::default();
 
-    if let Some(caps) = CONTENT_DISPOSITION_REGEX.captures(content_disposition) && let Some(filename) = caps.name("filename") {
+    if let Some(caps) = CONTENT_DISPOSITION_REGEX.captures(content_disposition) &&
+        let Some(filename) = caps.name("filename")
+    {
         let raw_filename = filename.as_str();
         if let Ok(decoded) = urlencoding::decode(raw_filename) {
             let decoded = decoded.into_owned();
@@ -39,7 +41,8 @@ pub fn parse_content_disposition(content_disposition: &str) -> ContentDispositio
         }
     }
 
-    let filename = content_disposition.split(';')
+    let filename = content_disposition
+        .split(';')
         .find(|part| part.trim().starts_with("filename="))
         .and_then(|part| part.split('=').nth(1))
         .map(|filename| filename.trim_matches('"').to_string());

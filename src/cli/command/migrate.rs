@@ -1,15 +1,12 @@
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
-use dialoguer::Confirm;
-use indicatif::ProgressBar;
-use sea_orm::ActiveValue::Set;
-use sea_orm::EntityTrait;
-use tokio::fs;
+use crate::{cli::utils, config, database};
 use async_recursion::async_recursion;
-use mime_guess;
+use dialoguer::Confirm;
 use entity;
-use crate::cli::utils;
-use crate::database;
-use crate::config;
+use indicatif::ProgressBar;
+use mime_guess;
+use sea_orm::{ActiveValue::Set, EntityTrait};
+use std::path::{MAIN_SEPARATOR, Path, PathBuf};
+use tokio::fs;
 
 #[derive(Debug)]
 pub struct MigrateObject {
@@ -34,10 +31,7 @@ pub async fn execute(old_dir: String) {
     }
     tracing::info!("Found {} files to migrate.", total_files);
 
-    let confirmation = Confirm::new()
-        .with_prompt("Continue?")
-        .interact()
-        .unwrap();
+    let confirmation = Confirm::new().with_prompt("Continue?").interact().unwrap();
 
     if !confirmation {
         tracing::info!("Migration cancelled.");
@@ -52,7 +46,9 @@ pub async fn execute(old_dir: String) {
     }
 
     pb.finish();
-    tracing::info!("Migration completed successfully. If necessary, run the `import` command. (The `import` command imports accurate file information from Misskey)");
+    tracing::info!(
+        "Migration completed successfully. If necessary, run the `import` command. (The `import` command imports accurate file information from Misskey)"
+    );
 }
 
 #[async_recursion]
@@ -87,8 +83,10 @@ async fn migrate_objects_recursive(base_dir: &str, current_dir: &str, items: &mu
         let relative_path_str = format!("/{}", relative_path.to_string_lossy().to_string().replace(MAIN_SEPARATOR, "/"));
 
         let mime = mime_guess::from_path(&path).first_or_octet_stream().to_string();
+
         // let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or_default().to_string();
         // let normalized_filename = utils::FILENAME_NORMALIZE_REGEX.replace_all(&filename, "_").to_string();
+
         let internal_filename = blake3::hash(relative_path_str.as_bytes()).to_hex().to_string();
 
         let object = entity::object::ActiveModel {

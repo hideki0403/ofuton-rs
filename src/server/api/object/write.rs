@@ -1,10 +1,19 @@
-use axum::{body::Body, extract::Request, http::{Method, Response, StatusCode}, response::IntoResponse};
+use crate::{
+    server::{
+        AppResult,
+        middleware::multipart::MultipartUploadState,
+        utils::{get_header, parse_content_disposition},
+    },
+    storage,
+};
+use axum::{
+    body::Body,
+    extract::Request,
+    http::{Method, Response, StatusCode},
+    response::IntoResponse,
+};
 use serde::Serialize;
 use uuid::Uuid;
-use crate::storage;
-use crate::server::AppResult;
-use crate::server::middleware::multipart::MultipartUploadState;
-use crate::server::utils::{get_header, parse_content_disposition};
 
 #[derive(PartialEq, Debug)]
 enum OperationType {
@@ -73,7 +82,7 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             } else {
                 OperationType::DeleteObject
             }
-        },
+        }
         _ => OperationType::Unknown,
     };
 
@@ -106,7 +115,12 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
             Ok(StatusCode::CREATED.into_response())
         }
         OperationType::CreateMultipartUpload => {
-            let upload_id = storage::create_multipart_upload(object_path.clone(), content_disposition.filename, content_disposition.encoded_filename, mime_type);
+            let upload_id = storage::create_multipart_upload(
+                object_path.clone(),
+                content_disposition.filename,
+                content_disposition.encoded_filename,
+                mime_type,
+            );
 
             let (bucket, key) = object_path.split_once('/').unwrap_or(("", &object_path));
             let response = S3InitiateMultipartUploadResult {
@@ -194,8 +208,6 @@ pub async fn write_handler(request: Request<Body>) -> AppResult<impl IntoRespons
 
             Ok(StatusCode::NO_CONTENT.into_response())
         }
-        _ => {
-            Ok((StatusCode::BAD_REQUEST, "Unknown operation type").into_response())
-        }
+        _ => Ok((StatusCode::BAD_REQUEST, "Unknown operation type").into_response()),
     }
 }

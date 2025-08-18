@@ -6,25 +6,20 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager.alter_table(
-            Table::alter()
-                .table(Object::Table)
-                .add_column(
-                    ColumnDef::new(Object::InternalFilename)
-                        .string()
-                        .not_null(),
-                )
-                .to_owned(),
-        ).await
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Object::Table)
+                    .add_column(ColumnDef::new(Object::InternalFilename).string().not_null())
+                    .to_owned(),
+            )
+            .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager.alter_table(
-            Table::alter()
-                .table(Object::Table)
-                .drop_column(Object::InternalFilename)
-                .to_owned(),
-        ).await
+        manager
+            .alter_table(Table::alter().table(Object::Table).drop_column(Object::InternalFilename).to_owned())
+            .await
     }
 }
 

@@ -1,4 +1,4 @@
-use axum::routing::{get, MethodRouter};
+use axum::routing::{MethodRouter, get};
 
 pub fn index() -> MethodRouter {
     get(|| async {

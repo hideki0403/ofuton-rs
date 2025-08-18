@@ -28,7 +28,7 @@ pub enum MigrationCommand {
     Import {
         #[arg(value_name = "METADATA_TSV_PATH", help = "Path to the metadata CSV file. ref: [TODO: link to docs]")]
         metadata_path: String,
-    }
+    },
 }
 
 pub fn handle() -> Option<MigrationCommand> {
@@ -43,8 +43,9 @@ pub async fn execute(command: MigrationCommand) {
         MigrationCommand::Import { metadata_path } => {
             command::import::execute(metadata_path).await;
         }
-        // MigrationCommand::Validate { dir } => {
-        //     println!("TODO");
-        // }
     }
+
+    // MigrationCommand::Validate { dir } => {
+    //     println!("TODO");
+    // }
 }

@@ -1,8 +1,8 @@
-use std::{fs, path::Path, process};
+use crate::resource;
+use config::{Config, File, FileFormat};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
-use config::{Config, File, FileFormat};
-use crate::resource;
+use std::{fs, path::Path, process};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CFGServer {
@@ -83,6 +83,4 @@ impl AppConfig {
     }
 }
 
-pub static CONFIG: Lazy<AppConfig> = Lazy::new(|| {
-    AppConfig::new().expect("Failed to initialize application configuration")
-});
+pub static CONFIG: Lazy<AppConfig> = Lazy::new(|| AppConfig::new().expect("Failed to initialize application configuration"));

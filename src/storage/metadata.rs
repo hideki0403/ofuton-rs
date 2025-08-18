@@ -1,7 +1,6 @@
-use anyhow::Error;
-use sea_orm::ModelTrait;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use crate::database;
+use anyhow::Error;
+use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter};
 
 pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {
     let object_data = entity::object::Entity::find()
@@ -10,7 +9,11 @@ pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {
         .await;
 
     if object_data.is_err() {
-        tracing::error!("Failed to fetch object metadata for path '{}': {}", path, object_data.as_ref().err().unwrap());
+        tracing::error!(
+            "Failed to fetch object metadata for path '{}': {}",
+            path,
+            object_data.as_ref().err().unwrap()
+        );
         return None;
     }
 
@@ -18,9 +21,7 @@ pub async fn get_metadata_by_path(path: &str) -> Option<entity::object::Model> {
 }
 
 pub async fn create_metadata(model: entity::object::ActiveModel) -> Result<(), Error> {
-    let insert_result = entity::object::Entity::insert(model)
-        .exec(database::get_db())
-        .await;
+    let insert_result = entity::object::Entity::insert(model).exec(database::get_db()).await;
 
     if insert_result.is_err() {
         tracing::error!("Failed to create object metadata: {}", insert_result.as_ref().err().unwrap());

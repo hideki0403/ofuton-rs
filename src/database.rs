@@ -1,8 +1,8 @@
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use once_cell::sync::OnceCell;
-use migration::{Migrator, MigratorTrait};
-use tracing::log::LevelFilter;
 use crate::config;
+use migration::{Migrator, MigratorTrait};
+use once_cell::sync::OnceCell;
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use tracing::log::LevelFilter;
 
 static DB: OnceCell<DatabaseConnection> = OnceCell::new();
 

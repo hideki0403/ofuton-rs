@@ -1,3 +1,8 @@
+use crate::config;
+use anyhow::Error;
+use axum::body::BodyDataStream;
+use chrono::{DateTime, TimeDelta, Utc};
+use sea_orm::ActiveValue::Set;
 use std::{
     collections::HashMap,
     fs,
@@ -6,18 +11,13 @@ use std::{
     pin::Pin,
     process,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc, LazyLock, Mutex,
+        atomic::{AtomicBool, Ordering},
     },
     time::Duration,
 };
-use anyhow::Error;
-use axum::body::BodyDataStream;
-use chrono::{DateTime, TimeDelta, Utc};
-use sea_orm::ActiveValue::Set;
 use tokio::{fs::File, time};
 use uuid::Uuid;
-use crate::config;
 
 mod file;
 mod metadata;
@@ -40,9 +40,7 @@ pub struct WriteObjectData {
 
 // Multipart upload state management
 pub type MultipartUploadState = Arc<Mutex<HashMap<String, MultipartUploadItem>>>;
-pub static MULTIPART_UPLOAD_STATE: LazyLock<MultipartUploadState> = LazyLock::new(|| {
-    Arc::new(Mutex::new(HashMap::new()))
-});
+pub static MULTIPART_UPLOAD_STATE: LazyLock<MultipartUploadState> = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 #[derive(Clone)]
 pub struct MultipartUploadItem {
@@ -84,7 +82,11 @@ pub async fn get_object(path: String, with_file: bool) -> Result<ReadObjectData,
 
     Ok(ReadObjectData {
         metadata: object_data,
-        file: if with_file { Some(file::read_object(internal_filename).await?) } else { None },
+        file: if with_file {
+            Some(file::read_object(internal_filename).await?)
+        } else {
+            None
+        },
     })
 }
 
@@ -198,7 +200,7 @@ pub async fn delete_object(path: String) -> Result<(), Error> {
 
 static IS_CLEANUP_REGISTERED: AtomicBool = AtomicBool::new(false);
 
-fn internal_cleanup() -> Pin<Box<dyn Future<Output=Result<(), ()>> + Send>> {
+fn internal_cleanup() -> Pin<Box<dyn Future<Output = Result<(), ()>> + Send>> {
     Box::pin(async move {
         if IS_CLEANUP_REGISTERED.load(Ordering::SeqCst) {
             tracing::debug!("Cleanup already registered, skipping...");
@@ -229,14 +231,9 @@ fn internal_cleanup() -> Pin<Box<dyn Future<Output=Result<(), ()>> + Send>> {
             let state = MULTIPART_UPLOAD_STATE.lock().unwrap();
             let now = Utc::now();
             let diff = TimeDelta::seconds(config::CONFIG.bucket.request_expiration_seconds);
-            state.iter()
-                .filter_map(|(id, item)| {
-                    if now - item.last_upload_at > diff {
-                        Some(id.clone())
-                    } else {
-                        None
-                    }
-                })
+            state
+                .iter()
+                .filter_map(|(id, item)| if now - item.last_upload_at > diff { Some(id.clone()) } else { None })
                 .collect::<Vec<String>>()
         };
 

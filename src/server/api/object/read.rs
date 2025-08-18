@@ -1,8 +1,15 @@
-use axum::{body::Body, extract::Request, http::{HeaderMap, Method, StatusCode}, response::IntoResponse};
-use axum_range::{Ranged, KnownSize};
-use axum_extra::{headers::Range, TypedHeader};
-use crate::server::{AppResult, utils::build_content_disposition_filename};
-use crate::storage;
+use crate::{
+    server::{AppResult, utils::build_content_disposition_filename},
+    storage,
+};
+use axum::{
+    body::Body,
+    extract::Request,
+    http::{HeaderMap, Method, StatusCode},
+    response::IntoResponse,
+};
+use axum_extra::{TypedHeader, headers::Range};
+use axum_range::{KnownSize, Ranged};
 
 pub async fn read_handler(method: Method, range: Option<TypedHeader<Range>>, request: Request<Body>) -> AppResult<impl IntoResponse> {
     let object_path = request.uri().path().to_string();
@@ -25,7 +32,10 @@ pub async fn read_handler(method: Method, range: Option<TypedHeader<Range>>, req
     headers.insert("Accept-Ranges", "bytes".parse().unwrap());
 
     let mut content_disposition = vec!["inline".to_string()];
-    content_disposition.extend(build_content_disposition_filename(object_data.metadata.filename, object_data.metadata.encoded_filename));
+    content_disposition.extend(build_content_disposition_filename(
+        object_data.metadata.filename,
+        object_data.metadata.encoded_filename,
+    ));
     headers.insert("Content-Disposition", content_disposition.join("; ").parse().unwrap());
 
     if is_head_request {
