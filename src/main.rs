@@ -17,7 +17,7 @@ fn main() {
             .as_ref()
             .and_then(|d| d.log_level.as_ref())
             .and_then(|s| s.parse::<LevelFilter>().ok())
-            .unwrap_or({ if cfg!(debug_assertions) { LevelFilter::DEBUG } else { LevelFilter::INFO } });
+            .unwrap_or(if cfg!(debug_assertions) { LevelFilter::DEBUG } else { LevelFilter::INFO });
 
         tracing_subscriber::EnvFilter::new(level.to_string())
     });
