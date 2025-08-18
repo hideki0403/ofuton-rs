@@ -5,9 +5,8 @@ on:
   workflow_dispatch:
   workflow_call:
   push:
-    branches:
-      - '!master'
-      - '*'
+    branches-ignore:
+      - 'master'
 
 env:
   CARGO_TERM_COLOR: always
