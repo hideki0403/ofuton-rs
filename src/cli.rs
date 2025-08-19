@@ -26,7 +26,7 @@ pub enum MigrationCommand {
 
     /// Import object metadata from a TSV file
     Import {
-        #[arg(value_name = "METADATA_TSV_PATH", help = "Path to the metadata CSV file. ref: [TODO: link to docs]")]
+        #[arg(value_name = "METADATA_TSV_PATH", help = "Path to the metadata CSV file. ref: README.md")]
         metadata_path: String,
     },
 }
