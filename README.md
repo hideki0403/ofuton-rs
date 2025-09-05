@@ -1,19 +1,23 @@
 # ofuton-rs
-TODO  
+English | [日本語](README_ja.md)  
+  
+Lightweight S3-compatible object storage for Misskey
 
-### ofuton v1からのマイグレーション方法
-TODO
+## Features
+ofuton-rs supports the following operations:
+- PutObject
+- DeleteObject
+- CreateMultiPartUpload
+- UploadPart
+- CompleteMultipartUpload
+- AbortMultipartUpload
 
-### ファイル情報のimportに使用するtsvファイルの出力方法
-```sh
-psql misskey -t -c 'SELECT name, type, url FROM drive_file WHERE "userHost" IS NULL' -A -F $'\t' > drive_file.tsv
-```
+> [!NOTE]  
+> ofuton-rs is designed and tested as an object storage for Misskey.  
+> Operation with software other than Misskey is not guaranteed.  
 
-### テストが落ちる場合
-大抵の場合はコードスタイルの問題で落ちているため、以下のコマンドを実行して修正すると通る可能性が高い  
-ツールチェイン等が最新版でない場合は `rustup update` しておく  
+### Setup
+See: https://github.com/hideki0403/ofuton-rs/wiki/setup  
 
-```sh
-cargo clippy --no-deps --all-features --fix # 場合によっては --allow-dirty
-cargo +nightly fmt --all
-```
+### Migration from ofuton(v1)
+See: https://github.com/hideki0403/ofuton-rs/wiki/migration  
